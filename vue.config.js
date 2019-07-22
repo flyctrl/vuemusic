@@ -9,6 +9,7 @@ module.exports = {
       .set("assets", resolve("src/assets"))
       .set("common", resolve("src/common"))
       .set("components", resolve("src/components"))
+      .set("api", resolve("src/api"))
       .set("public", resolve("public"));
   },
 }
