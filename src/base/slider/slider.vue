@@ -62,6 +62,12 @@ export default {
       this._play()
     }
   },
+  deactivated() {
+    clearTimeout(this.timer)
+  },
+  destroyed() {
+    clearTimeout(this.timer)
+  },
   methods: {
     _setSliderWidth(isResize) {
       this.children = this.$refs.sliderGroup.children
