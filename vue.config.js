@@ -19,6 +19,10 @@ module.exports = {
       .set("public", resolve("public"));
   },
   devServer: {
+    overlay: {
+      warnings: true,
+      errors: true
+    },
     before: function(app) {
       app.get('/api/getDiscList', function (req, res) {
         const url = 'https://c.y.qq.com/splcloud/fcgi-bin/fcg_get_diss_by_tag.fcg'
