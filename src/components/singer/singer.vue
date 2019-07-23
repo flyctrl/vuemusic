@@ -1,6 +1,6 @@
 <template>
 <div class="singer">
-  singer
+  <list-view :data="singers"></list-view>
 </div>
 </template>
 
@@ -8,6 +8,7 @@
 import { getSingerList } from 'api/singer'
 import { ERR_OK } from 'api/config'
 import Singer from 'common/js/singer'
+import ListView from 'base/listview/listview'
 
 const HOT_NAME = '热门'
 const HOT_SINGER_LEN = 10
@@ -16,7 +17,7 @@ export default {
   name: 'Singer',
   data() {
     return {
-      singer: []
+      singers: []
     }
   },
   created() {
@@ -25,10 +26,11 @@ export default {
   methods: {
     _getSingerList() {
       getSingerList().then((res) => {
+        console.log('res:', res)
         if (res.code === ERR_OK) {
           let newSinger = this._normalizeSinger(res.data.list)
-          this.singer = JSON.parse(JSON.stringify(newSinger))
-          console.log('singer:', this.singer)
+          this.singers = JSON.parse(JSON.stringify(newSinger))
+          console.log('singer:', this.singers)
         }
       })
     },
@@ -45,18 +47,18 @@ export default {
             id: item.Fsinger_mid,
             name: item.Fsinger_name
           }))))
-          const key = item.Findex
-          if (!map[key]) {
-            map[key] = {
-              title: key,
-              items: []
-            }
-          }
-          map[key].items.push(JSON.parse(JSON.stringify(new Singer({
-            id: item.Fsinger_mid,
-            name: item.Fsinger_name
-          }))))
         }
+        const key = item.Findex
+        if (!map[key]) {
+          map[key] = {
+            title: key,
+            items: []
+          }
+        }
+        map[key].items.push(JSON.parse(JSON.stringify(new Singer({
+          id: item.Fsinger_mid,
+          name: item.Fsinger_name
+        }))))
       })
       // 为了得到有序列表，我们需要处理 map
       let ret = []
@@ -74,7 +76,11 @@ export default {
       })
       return hot.concat(ret)
     }
+  },
+  components: {
+    ListView
   }
+
 }
 </script>
 
