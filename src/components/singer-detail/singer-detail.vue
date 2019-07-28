@@ -5,11 +5,20 @@
 </template>
 
 <script>
+import { mapGetters } from 'vuex'
 export default {
   name: 'singerdetail',
   data () {
     return {
     }
+  },
+  computed: {
+    ...mapGetters([
+      'singer'
+    ])
+  },
+  created() {
+    console.log(this.singer)
   },
   methods: {
   }
