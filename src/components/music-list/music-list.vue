@@ -12,7 +12,8 @@
       <div class="play-wrapper">
         <div ref="playBtn"
              v-show="songs.length>0"
-             class="play">
+             class="play"
+             @click="random">
           <i class="icon-play"></i>
           <span class="text">随机播放全部</span>
         </div>
@@ -23,13 +24,15 @@
     <div class="bg-layer"
          ref="layer"></div>
     <scroll :data="songs"
-            class="list"
-            ref="list"
             @scroll="scroll"
             :listen-scroll="listenScroll"
-            :probe-type="probeType">
+            :probe-type="probeType"
+            class="list"
+            ref="list">
       <div class="song-list-wrapper">
-        <song-list :songs="songs"></song-list>
+        <song-list :songs="songs"
+                   :rank="rank"
+                   @select="selectItem"></song-list>
       </div>
       <div v-show="!songs.length"
            class="loading-container">
@@ -41,16 +44,18 @@
 
 <script>
 import Scroll from 'base/scroll/scroll'
-import SongList from 'base/song-list/song-list'
 import Loading from 'base/loading/loading'
+import SongList from 'base/song-list/song-list'
 import { prefixStyle } from 'common/js/dom'
+import { playlistMixin } from 'common/js/mixin'
+import { mapActions } from 'vuex'
 
 const RESERVED_HEIGHT = 40
 const transform = prefixStyle('transform')
 const backdrop = prefixStyle('backdrop-filter')
 
 export default {
-  name: 'music-list',
+  mixins: [playlistMixin],
   props: {
     bgImage: {
       type: String,
@@ -63,6 +68,10 @@ export default {
     title: {
       type: String,
       default: ''
+    },
+    rank: {
+      type: Boolean,
+      default: false
     }
   },
   data () {
@@ -70,33 +79,53 @@ export default {
       scrollY: 0
     }
   },
-  created () {
-    this.probeType = 3
-    this.listenScroll = true
-  },
   computed: {
     bgStyle () {
       return `background-image:url(${this.bgImage})`
     }
   },
-  methods: {
-    scroll (pos) {
-      this.scrollY = pos.y
-    },
-    back () {
-      this.$router.back()
-    }
+  created () {
+    this.probeType = 3
+    this.listenScroll = true
   },
   mounted () {
     this.imageHeight = this.$refs.bgImage.clientHeight
     this.minTransalteY = -this.imageHeight + RESERVED_HEIGHT
     this.$refs.list.$el.style.top = `${this.imageHeight}px`
   },
+  methods: {
+    handlePlaylist (playlist) {
+      const bottom = playlist.length > 0 ? '60px' : ''
+      this.$refs.list.$el.style.bottom = bottom
+      this.$refs.list.refresh()
+    },
+    scroll (pos) {
+      this.scrollY = pos.y
+    },
+    back () {
+      this.$router.back()
+    },
+    selectItem (item, index) {
+      this.selectPlay({
+        list: this.songs,
+        index
+      })
+    },
+    random () {
+      this.randomPlay({
+        list: this.songs
+      })
+    },
+    ...mapActions([
+      'selectPlay',
+      'randomPlay'
+    ])
+  },
   watch: {
     scrollY (newVal) {
       let translateY = Math.max(this.minTransalteY, newVal)
-      let zIndex = 0
       let scale = 1
+      let zIndex = 0
       let blur = 0
       const percent = Math.abs(newVal / this.imageHeight)
       if (newVal > 0) {
@@ -105,6 +134,7 @@ export default {
       } else {
         blur = Math.min(20, percent * 20)
       }
+
       this.$refs.layer.style[transform] = `translate3d(0,${translateY}px,0)`
       this.$refs.filter.style[backdrop] = `blur(${blur}px)`
       if (newVal < this.minTransalteY) {
@@ -123,13 +153,13 @@ export default {
   },
   components: {
     Scroll,
-    SongList,
-    Loading
+    Loading,
+    SongList
   }
 }
 </script>
 
-<style lang="stylus" scoped>
+<style scoped lang="stylus" rel="stylesheet/stylus">
 @import '~common/stylus/variable'
 @import '~common/stylus/mixin'
 .music-list
